@@ -6,18 +6,21 @@ set -o errexit
 pip install --upgrade pip
 pip install -r requirements.txt
 
-# Initialize database and create admin user
-python -c "
+# Initialize database using Flask CLI
+export FLASK_APP=run.py
+flask init_db
+
+# Create admin user
+python << 'PYTHON_SCRIPT'
+import os
+os.environ['FLASK_ENV'] = 'production'
+
 from app import create_app, db
 from app.models import User
 
 app = create_app('production')
 
 with app.app_context():
-    # Create all tables
-    db.create_all()
-    print('Database tables created successfully!')
-
     # Create admin user if not exists
     if User.query.count() == 0:
         admin = User(
@@ -34,4 +37,4 @@ with app.app_context():
         print('Admin user created: username=admin, password=admin123')
     else:
         print('Admin user already exists')
-"
+PYTHON_SCRIPT
