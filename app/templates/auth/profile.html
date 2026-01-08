@@ -1,0 +1,202 @@
+{% extends "base/base.html" %}
+
+{% block title %}Profile - ClinicX{% endblock %}
+
+{% block content %}
+<!--
+    User Profile Page
+
+    Purpose: Display current user's profile information
+    Features:
+    - View personal information
+    - View role and permissions
+    - Quick link to change password
+    - Last login information
+
+    Future enhancements:
+    - Edit profile information
+    - Upload profile picture
+    - Activity log
+    - Two-factor authentication settings
+-->
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">
+                    <i class="bi bi-person-circle"></i> My Profile
+                </h1>
+                <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-key"></i> Change Password
+                </a>
+            </div>
+
+            <!-- Profile Card -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i> User Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Username</label>
+                            <p class="h5">{{ current_user.username }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Email</label>
+                            <p class="h5">{{ current_user.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">First Name</label>
+                            <p class="h5">{{ current_user.first_name }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Name</label>
+                            <p class="h5">{{ current_user.last_name }}</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Phone</label>
+                            <p class="h5">{{ current_user.phone or 'Not provided' }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Role</label>
+                            <p class="h5">
+                                <span class="badge bg-primary fs-6">
+                                    {{ current_user.role.upper() }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Account Created</label>
+                            <p class="mb-0">
+                                <i class="bi bi-calendar-check text-success"></i>
+                                {{ current_user.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted">Last Login</label>
+                            <p class="mb-0">
+                                <i class="bi bi-clock-history text-info"></i>
+                                {% if current_user.last_login %}
+                                    {{ current_user.last_login.strftime('%B %d, %Y at %I:%M %p') }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="form-label text-muted">Account Status</label>
+                            <p class="mb-0">
+                                {% if current_user.is_active %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle"></i> Active
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="bi bi-x-circle"></i> Inactive
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Permissions Card (Role-based) -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-shield-check"></i> Permissions & Access
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if current_user.is_admin() %}
+                        <div class="alert alert-info">
+                            <i class="bi bi-star-fill"></i>
+                            <strong>Administrator Access</strong> - You have full access to all system features.
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> User Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Patient Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Medical Records (Full Access)</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Appointments Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Financial Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Reports & Analytics</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> System Settings</li>
+                        </ul>
+                    {% elif current_user.is_doctor() %}
+                        <div class="alert alert-primary">
+                            <i class="bi bi-heart-pulse-fill"></i>
+                            <strong>Doctor Access</strong> - You can manage patients and medical records.
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Patient Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Medical Records (Create, Edit, Delete)</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Appointments Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> View Financial Reports</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> User Management</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> System Settings</li>
+                        </ul>
+                    {% elif current_user.is_receptionist() %}
+                        <div class="alert alert-success">
+                            <i class="bi bi-people-fill"></i>
+                            <strong>Receptionist Access</strong> - You can manage appointments and basic patient info.
+                        </div>
+                        <ul class="list-unstyled mb-0">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Patient Registration</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Appointments Management</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Basic Financial Transactions</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> View Medical Records</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> Edit Medical Records</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> User Management</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> System Settings</li>
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-lightning-fill"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('main.dashboard') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-speedometer2"></i> Go to Dashboard
+                        </a>
+                        <a href="{{ url_for('auth.change_password') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-key"></i> Change Password
+                        </a>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

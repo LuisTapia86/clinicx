@@ -1,0 +1,469 @@
+{% extends "base/base.html" %}
+
+{% block title %}New Medical Record - {{ patient.full_name }}{% endblock %}
+
+{% block content %}
+<!--
+    Create Medical Record Page
+
+    Purpose: Form to create a new medical visit record for a patient
+    Features:
+    - Comprehensive medical visit documentation
+    - Vital signs recording with normal ranges
+    - Diagnosis and treatment documentation
+    - Prescription writing
+    - Follow-up scheduling
+    - Lab and imaging results
+
+    Developer notes:
+    - Auto-saves visit date as current datetime
+    - Vital signs are optional but recommended
+    - BMI calculated automatically from height/weight
+    - Prescription uses textarea for multi-line input
+    - Follow-up checkbox toggles follow-up date field
+
+    Validation:
+    - Visit reason and diagnosis are required
+    - Numeric fields validated for reasonable ranges
+    - Date fields validated (no future dates for visit)
+
+    Future enhancements:
+    - Voice-to-text for faster documentation
+    - Template-based prescriptions
+    - File upload for lab results/images
+    - Integration with lab systems
+    - ICD-10 code lookup for diagnosis
+    - Drug interaction checker
+-->
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <!-- Header -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('patients.index') }}">Patients</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('patients.view', patient_id=patient.id) }}">
+                            {{ patient.full_name }}
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('medical.patient_records', patient_id=patient.id) }}">
+                            Medical Records
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active">New Record</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2">
+                        <i class="bi bi-file-medical-fill"></i> New Medical Record
+                    </h1>
+                    <p class="text-muted">Record medical visit for {{ patient.full_name }}</p>
+                </div>
+                <a href="{{ url_for('medical.patient_records', patient_id=patient.id) }}"
+                   class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Records
+                </a>
+            </div>
+
+            <!-- Patient Quick Info Alert -->
+            <div class="alert alert-info">
+                <div class="row">
+                    <div class="col-md-3">
+                        <strong>Patient:</strong> {{ patient.full_name }}
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Age:</strong> {{ patient.age }} years
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Blood Type:</strong>
+                        {% if patient.blood_type %}
+                            <span class="badge bg-danger">{{ patient.blood_type }}</span>
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </div>
+                    <div class="col-md-4">
+                        {% if patient.allergies %}
+                            <strong>Allergies:</strong>
+                            <span class="badge bg-warning text-dark">
+                                <i class="bi bi-exclamation-triangle"></i> {{ patient.allergies[:30] }}...
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medical Record Form -->
+            <form method="POST" action="{{ url_for('medical.create', patient_id=patient.id) }}" id="medicalRecordForm">
+                <!-- Visit Information -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-pulse"></i> Visit Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="visit_reason" class="form-label">
+                                Visit Reason <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control"
+                                   id="visit_reason"
+                                   name="visit_reason"
+                                   placeholder="e.g., Annual checkup, Follow-up visit, New symptoms"
+                                   required>
+                            <small class="form-text text-muted">Brief description of why the patient visited</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="symptoms" class="form-label">Symptoms</label>
+                            <textarea class="form-control"
+                                      id="symptoms"
+                                      name="symptoms"
+                                      rows="3"
+                                      placeholder="Describe patient's symptoms in detail..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="diagnosis" class="form-label">
+                                Diagnosis <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control"
+                                      id="diagnosis"
+                                      name="diagnosis"
+                                      rows="3"
+                                      placeholder="Medical diagnosis based on examination and symptoms..."
+                                      required></textarea>
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="treatment" class="form-label">Treatment Plan</label>
+                            <textarea class="form-control"
+                                      id="treatment"
+                                      name="treatment"
+                                      rows="3"
+                                      placeholder="Recommended treatment, procedures, or interventions..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vital Signs -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-heart-pulse"></i> Vital Signs
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="temperature" class="form-label">Temperature (°C)</label>
+                                <input type="number"
+                                       step="0.1"
+                                       class="form-control"
+                                       id="temperature"
+                                       name="temperature"
+                                       placeholder="36.5"
+                                       min="30"
+                                       max="45">
+                                <small class="text-muted">Normal: 36.5-37.5°C</small>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="blood_pressure_systolic" class="form-label">BP Systolic (mmHg)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="blood_pressure_systolic"
+                                       name="blood_pressure_systolic"
+                                       placeholder="120"
+                                       min="50"
+                                       max="250">
+                                <small class="text-muted">Normal: 90-120</small>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="blood_pressure_diastolic" class="form-label">BP Diastolic (mmHg)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="blood_pressure_diastolic"
+                                       name="blood_pressure_diastolic"
+                                       placeholder="80"
+                                       min="30"
+                                       max="150">
+                                <small class="text-muted">Normal: 60-80</small>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="heart_rate" class="form-label">Heart Rate (BPM)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="heart_rate"
+                                       name="heart_rate"
+                                       placeholder="72"
+                                       min="30"
+                                       max="200">
+                                <small class="text-muted">Normal: 60-100</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label for="respiratory_rate" class="form-label">Respiratory Rate (/min)</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="respiratory_rate"
+                                       name="respiratory_rate"
+                                       placeholder="16"
+                                       min="5"
+                                       max="50">
+                                <small class="text-muted">Normal: 12-20</small>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="oxygen_saturation" class="form-label">O2 Saturation (%)</label>
+                                <input type="number"
+                                       step="0.1"
+                                       class="form-control"
+                                       id="oxygen_saturation"
+                                       name="oxygen_saturation"
+                                       placeholder="98"
+                                       min="50"
+                                       max="100">
+                                <small class="text-muted">Normal: >95%</small>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="weight" class="form-label">Weight (kg)</label>
+                                <input type="number"
+                                       step="0.1"
+                                       class="form-control"
+                                       id="weight"
+                                       name="weight"
+                                       placeholder="70.5"
+                                       min="1"
+                                       max="500">
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="height" class="form-label">Height (cm)</label>
+                                <input type="number"
+                                       step="0.1"
+                                       class="form-control"
+                                       id="height"
+                                       name="height"
+                                       placeholder="175"
+                                       min="30"
+                                       max="250">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-secondary" id="bmiDisplay" style="display: none;">
+                            <strong>BMI:</strong> <span id="bmiValue"></span> - <span id="bmiCategory"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prescription & Tests -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-capsule"></i> Prescription & Test Results
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="prescription" class="form-label">Prescription</label>
+                            <textarea class="form-control font-monospace"
+                                      id="prescription"
+                                      name="prescription"
+                                      rows="5"
+                                      placeholder="Medication name - Dosage - Frequency - Duration&#10;Example:&#10;Amoxicillin 500mg - 1 tablet - Every 8 hours - 7 days&#10;Ibuprofen 400mg - 1 tablet - Every 6 hours as needed - 5 days"></textarea>
+                            <small class="text-muted">List each medication on a separate line</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="lab_results" class="form-label">Laboratory Results</label>
+                            <textarea class="form-control"
+                                      id="lab_results"
+                                      name="lab_results"
+                                      rows="4"
+                                      placeholder="Results from blood tests, urinalysis, etc."></textarea>
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="imaging_results" class="form-label">Imaging Results</label>
+                            <textarea class="form-control"
+                                      id="imaging_results"
+                                      name="imaging_results"
+                                      rows="4"
+                                      placeholder="X-ray, MRI, CT scan findings..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Follow-up -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check"></i> Follow-up
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="follow_up_required"
+                                       name="follow_up_required"
+                                       onchange="toggleFollowUpFields()">
+                                <label class="form-check-label" for="follow_up_required">
+                                    Follow-up appointment required
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="followUpFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="follow_up_date" class="form-label">Follow-up Date</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="follow_up_date"
+                                       name="follow_up_date">
+                            </div>
+
+                            <div class="mb-0">
+                                <label for="follow_up_notes" class="form-label">Follow-up Notes</label>
+                                <textarea class="form-control"
+                                          id="follow_up_notes"
+                                          name="follow_up_notes"
+                                          rows="3"
+                                          placeholder="Reason for follow-up, what to check, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doctor Notes -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sticky-fill"></i> Additional Doctor Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <textarea class="form-control"
+                                  id="doctor_notes"
+                                  name="doctor_notes"
+                                  rows="4"
+                                  placeholder="Any additional observations, concerns, or notes..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-success btn-lg">
+                                        <i class="bi bi-check-circle"></i> Save Medical Record
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <a href="{{ url_for('medical.patient_records', patient_id=patient.id) }}"
+                                       class="btn btn-outline-secondary btn-lg">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <span class="text-danger">*</span> Required fields
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/**
+ * Toggle follow-up fields visibility
+ */
+function toggleFollowUpFields() {
+    const checkbox = document.getElementById('follow_up_required');
+    const fields = document.getElementById('followUpFields');
+    fields.style.display = checkbox.checked ? 'block' : 'none';
+}
+
+/**
+ * Calculate and display BMI
+ */
+function calculateBMI() {
+    const weight = parseFloat(document.getElementById('weight').value);
+    const height = parseFloat(document.getElementById('height').value);
+
+    if (weight && height && weight > 0 && height > 0) {
+        const heightInMeters = height / 100;
+        const bmi = (weight / (heightInMeters * heightInMeters)).toFixed(2);
+
+        let category = '';
+        if (bmi < 18.5) category = 'Underweight';
+        else if (bmi < 25) category = 'Normal';
+        else if (bmi < 30) category = 'Overweight';
+        else category = 'Obese';
+
+        document.getElementById('bmiValue').textContent = bmi;
+        document.getElementById('bmiCategory').textContent = category;
+        document.getElementById('bmiDisplay').style.display = 'block';
+    } else {
+        document.getElementById('bmiDisplay').style.display = 'none';
+    }
+}
+
+// Event listeners for BMI calculation
+document.getElementById('weight').addEventListener('input', calculateBMI);
+document.getElementById('height').addEventListener('input', calculateBMI);
+
+// Set minimum date for follow-up (today)
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('follow_up_date').setAttribute('min', today);
+});
+
+// Unsaved changes warning
+let formModified = false;
+
+document.querySelectorAll('input, select, textarea').forEach(element => {
+    element.addEventListener('change', function() {
+        formModified = true;
+    });
+});
+
+window.addEventListener('beforeunload', function(e) {
+    if (formModified) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+document.getElementById('medicalRecordForm').addEventListener('submit', function() {
+    formModified = false;
+});
+</script>
+{% endblock %}

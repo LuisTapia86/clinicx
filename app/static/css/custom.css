@@ -1,0 +1,252 @@
+/* ClinicX Custom Styles */
+
+/* General */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+main {
+    flex: 1;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    border-bottom: 2px solid #e9ecef;
+    font-weight: 600;
+}
+
+/* Statistics Cards */
+.card.bg-primary .card-footer a:hover,
+.card.bg-success .card-footer a:hover,
+.card.bg-warning .card-footer a:hover,
+.card.bg-info .card-footer a:hover {
+    text-decoration: underline !important;
+}
+
+/* Tables */
+.table {
+    background-color: white;
+}
+
+.table thead th {
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Badges */
+.badge {
+    padding: 0.35em 0.65em;
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.25rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Forms */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group-text {
+    background-color: #e9ecef;
+    border: 1px solid #ced4da;
+}
+
+/* Alerts */
+.alert {
+    border: none;
+    border-left: 4px solid;
+}
+
+.alert-success {
+    border-left-color: #198754;
+    background-color: #d1e7dd;
+    color: #0f5132;
+}
+
+.alert-danger {
+    border-left-color: #dc3545;
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+.alert-warning {
+    border-left-color: #ffc107;
+    background-color: #fff3cd;
+    color: #997404;
+}
+
+.alert-info {
+    border-left-color: #0dcaf0;
+    background-color: #cff4fc;
+    color: #055160;
+}
+
+/* Footer */
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    margin-top: 2rem;
+}
+
+/* Pagination */
+.pagination {
+    margin-top: 1rem;
+}
+
+.page-link {
+    color: #0d6efd;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Loading Spinner */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Custom Utilities */
+.text-primary {
+    color: #0d6efd !important;
+}
+
+.shadow-sm {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.shadow {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+
+    .card {
+        margin-bottom: 1rem;
+    }
+
+    h1.h2 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Status Badges */
+.badge.bg-scheduled {
+    background-color: #6c757d !important;
+}
+
+.badge.bg-confirmed {
+    background-color: #0d6efd !important;
+}
+
+.badge.bg-in-progress {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+}
+
+.badge.bg-completed {
+    background-color: #198754 !important;
+}
+
+.badge.bg-cancelled {
+    background-color: #dc3545 !important;
+}
+
+.badge.bg-no-show {
+    background-color: #fd7e14 !important;
+}
+
+/* Patient Card */
+.patient-card {
+    border-left: 4px solid #0d6efd;
+}
+
+/* Appointment Card */
+.appointment-card {
+    border-left: 4px solid #198754;
+}
+
+/* Transaction Card */
+.transaction-income {
+    border-left: 4px solid #198754;
+}
+
+.transaction-expense {
+    border-left: 4px solid #dc3545;
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .footer,
+    .btn,
+    .no-print {
+        display: none !important;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+
+    body {
+        background-color: white;
+    }
+}

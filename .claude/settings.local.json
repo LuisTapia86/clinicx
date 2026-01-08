@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(pip install:*)",
+      "Bash(python run.py:*)",
+      "Bash(timeout /t 3)",
+      "Bash(if exist \"c:\\\\Users\\\\PC\\\\Desktop\\\\proyectos_python\\\\ClinicX\\\\clinicx.db\" del \"c:\\\\Users\\\\PC\\\\Desktop\\\\proyectos_python\\\\ClinicX\\\\clinicx.db\")",
+      "Bash(tasklist:*)",
+      "Bash(python:*)",
+      "Bash(cat:*)",
+      "Bash(taskkill:*)",
+      "Bash(xargs:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}

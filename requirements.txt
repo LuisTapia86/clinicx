@@ -1,0 +1,36 @@
+# Flask Core
+Flask>=3.0.0
+Werkzeug>=3.0.1
+
+# Database
+Flask-SQLAlchemy>=3.1.1
+SQLAlchemy>=2.0.23
+
+# Authentication
+Flask-Login>=0.6.3
+
+# Forms and Validation
+Flask-WTF>=1.2.1
+WTForms>=3.1.1
+
+# Internationalization
+Flask-Babel>=4.0.0
+Babel>=2.13.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# Date and Time
+python-dateutil>=2.8.2
+
+# File Upload
+Pillow>=10.4.0
+
+# Security
+email-validator>=2.1.0
+
+# Production Server
+gunicorn>=21.2.0
+
+# PostgreSQL (for production)
+psycopg2-binary>=2.9.9

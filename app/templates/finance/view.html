@@ -1,0 +1,148 @@
+{% extends "base/base.html" %}
+
+{% block title %}Transaction #{{ transaction.id }} - ClinicX{% endblock %}
+
+{% block content %}
+<!--
+    View Transaction Details
+-->
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('finance.index') }}">Finance</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('finance.transactions') }}">Transactions</a></li>
+                    <li class="breadcrumb-item active">Transaction #{{ transaction.id }}</li>
+                </ol>
+            </nav>
+
+            <h1 class="h2 mb-4">
+                <i class="bi bi-receipt"></i> Transaction #{{ transaction.id }}
+                <span class="badge bg-{{ 'success' if transaction.is_income() else 'danger' }}">
+                    {{ transaction.transaction_type|upper }}
+                </span>
+            </h1>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Transaction Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Date</label>
+                            <p class="h5">{{ transaction.transaction_date.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Amount</label>
+                            <p class="h4 text-{{ 'success' if transaction.is_income() else 'danger' }}">
+                                ${{ "%.2f"|format(transaction.amount) }} {{ transaction.currency }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Category</label>
+                            <p>{{ transaction.category|title }}</p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Status</label>
+                            <p><span class="badge bg-{{ 'success' if transaction.status == 'completed' else 'warning' }}">{{ transaction.status|title }}</span></p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted small">Description</label>
+                            <p>{{ transaction.description }}</p>
+                        </div>
+                    </div>
+
+                    {% if transaction.patient %}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted small">Patient</label>
+                            <p>
+                                <a href="{{ url_for('patients.view', patient_id=transaction.patient_id) }}">
+                                    {{ transaction.patient.full_name }}
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if transaction.payment_method %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Payment Method</label>
+                            <p>{{ transaction.payment_method|title }}</p>
+                        </div>
+                        {% if transaction.payment_reference %}
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Reference</label>
+                            <p>{{ transaction.payment_reference }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if transaction.invoice_number %}
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="text-muted small">Invoice Number</label>
+                            <p class="h6">{{ transaction.invoice_number }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if transaction.notes %}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label class="text-muted small">Notes</label>
+                            <p>{{ transaction.notes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <small class="text-muted">Created By:</small><br>
+                            {{ transaction.created_by.full_name }}
+                        </div>
+                        <div class="col-md-6">
+                            <small class="text-muted">Created At:</small><br>
+                            {{ transaction.created_at.strftime('%m/%d/%Y %I:%M %p') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <a href="{{ url_for('finance.edit', transaction_id=transaction.id) }}" class="btn btn-warning">
+                                    <i class="bi bi-pencil"></i> Edit Transaction
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <a href="{{ url_for('finance.transactions') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Back to Transactions
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

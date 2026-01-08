@@ -1,0 +1,86 @@
+{% extends "base/base.html" %}
+
+{% block title %}Calendar - Appointments{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!--
+    Appointments Calendar View
+    Purpose: Visual calendar display of all appointments
+    Features: Interactive calendar, color-coded by status, click to view details
+    Library: FullCalendar.js
+-->
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="h2"><i class="bi bi-calendar3"></i> Appointments Calendar</h1>
+            <p class="text-muted">Visual schedule overview</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <div class="btn-group">
+                <a href="{{ url_for('appointments.index') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-list"></i> List View
+                </a>
+                <a href="{{ url_for('appointments.create') }}" class="btn btn-primary">
+                    <i class="bi bi-calendar-plus"></i> New Appointment
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Legend -->
+    <div class="card shadow-sm mb-3">
+        <div class="card-body">
+            <strong>Status Legend:</strong>
+            <span class="badge bg-secondary ms-2">Scheduled</span>
+            <span class="badge bg-primary ms-2">Confirmed</span>
+            <span class="badge bg-warning text-dark ms-2">In Progress</span>
+            <span class="badge bg-success ms-2">Completed</span>
+            <span class="badge bg-danger ms-2">Cancelled</span>
+            <span class="badge bg-dark ms-2">No Show</span>
+        </div>
+    </div>
+
+    <!-- Calendar Container -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+        },
+        events: '{{ url_for("appointments.api_appointments") }}',
+        eventClick: function(info) {
+            window.location.href = '{{ url_for("appointments.view", appointment_id=0) }}'.replace('0', info.event.id);
+        },
+        eventTimeFormat: {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+        },
+        height: 'auto',
+        navLinks: true,
+        editable: false,
+        dayMaxEvents: true
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

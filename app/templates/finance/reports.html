@@ -1,0 +1,39 @@
+{% extends "base/base.html" %}
+
+{% block title %}Financial Reports - ClinicX{% endblock %}
+
+{% block content %}
+<!--
+    Financial Reports Page
+    Purpose: Generate and view financial reports
+    Future enhancement: Add charts, export to PDF, advanced analytics
+-->
+
+<div class="container-fluid">
+    <h1 class="h2 mb-4"><i class="bi bi-graph-up"></i> Financial Reports</h1>
+
+    <div class="alert alert-info">
+        <h5 class="alert-heading"><i class="bi bi-info-circle"></i> Coming Soon!</h5>
+        <p class="mb-0">Advanced financial reports and analytics will be available in a future update. This will include:</p>
+        <ul class="mb-0 mt-2">
+            <li>Income vs Expenses charts</li>
+            <li>Category breakdown</li>
+            <li>Monthly/Yearly trends</li>
+            <li>Export to PDF/Excel</li>
+            <li>Custom date ranges</li>
+            <li>Patient payment history</li>
+        </ul>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-bar-chart display-1 text-muted"></i>
+            <h4 class="mt-3">Report Generator</h4>
+            <p class="text-muted">This feature is under development</p>
+            <a href="{{ url_for('finance.index') }}" class="btn btn-primary mt-3">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,432 @@
+{% extends "base/base.html" %}
+
+{% block title %}Medical Record - {{ record.patient.full_name }}{% endblock %}
+
+{% block content %}
+<!--
+    View Medical Record Page
+
+    Purpose: Detailed view of a single medical record
+    Features:
+    - Complete visit information
+    - All vital signs with normal range indicators
+    - Diagnosis, treatment, and prescription details
+    - Follow-up information
+    - Print functionality
+
+    Developer notes:
+    - Vital signs show alerts if abnormal
+    - BMI calculated automatically
+    - Prescription formatting supports line breaks
+    - Edit/Delete restricted by role
+
+    Future enhancements:
+    - Print to PDF
+    - Email record to patient
+    - Attach files (lab results, images)
+    - E-prescription integration
+    - Voice notes transcription
+-->
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('patients.index') }}">Patients</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('patients.view', patient_id=record.patient_id) }}">
+                    {{ record.patient.full_name }}
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{{ url_for('medical.patient_records', patient_id=record.patient_id) }}">
+                    Medical Records
+                </a>
+            </li>
+            <li class="breadcrumb-item active">Record #{{ record.id }}</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2">
+                <i class="bi bi-file-medical-fill"></i> Medical Record #{{ record.id }}
+            </h1>
+            <p class="text-muted">
+                Visit Date: {{ record.visit_date.strftime('%B %d, %Y at %I:%M %p') }}
+            </p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if current_user.is_admin() or current_user.is_doctor() %}
+            <div class="btn-group" role="group">
+                <a href="{{ url_for('medical.edit', record_id=record.id) }}"
+                   class="btn btn-warning">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <button onclick="window.print()" class="btn btn-outline-secondary">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-md-8">
+            <!-- Visit Information -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clipboard-pulse"></i> Visit Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Visit Reason</label>
+                        <p class="h5">{{ record.visit_reason }}</p>
+                    </div>
+
+                    {% if record.symptoms %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Symptoms</label>
+                        <p>{{ record.symptoms }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Diagnosis</label>
+                        <p class="border-start border-4 border-danger ps-3">{{ record.diagnosis }}</p>
+                    </div>
+
+                    {% if record.treatment %}
+                    <div class="mb-0">
+                        <label class="form-label text-muted">Treatment</label>
+                        <p>{{ record.treatment }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Vital Signs -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-heart-pulse"></i> Vital Signs
+                        {% if record.has_abnormal_vitals() %}
+                            <span class="badge bg-warning text-dark float-end">
+                                <i class="bi bi-exclamation-triangle"></i> Abnormal Values Detected
+                            </span>
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Temperature</label>
+                            <p class="h4 {{ 'text-danger' if record.temperature and (record.temperature < 36.0 or record.temperature > 37.5) else '' }}">
+                                {% if record.temperature %}
+                                    {{ record.temperature }}°C
+                                    {% if record.temperature < 36.0 or record.temperature > 37.5 %}
+                                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Normal: 36.5-37.5°C</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Blood Pressure</label>
+                            <p class="h4">
+                                {% if record.blood_pressure %}
+                                    {{ record.blood_pressure }} mmHg
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Normal: 120/80 mmHg</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Heart Rate</label>
+                            <p class="h4">
+                                {% if record.heart_rate %}
+                                    {{ record.heart_rate }} BPM
+                                    {% if record.heart_rate < 60 or record.heart_rate > 100 %}
+                                        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Normal: 60-100 BPM</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Respiratory Rate</label>
+                            <p class="h4">
+                                {% if record.respiratory_rate %}
+                                    {{ record.respiratory_rate }} /min
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Normal: 12-20 /min</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Oxygen Saturation</label>
+                            <p class="h4">
+                                {% if record.oxygen_saturation %}
+                                    {{ record.oxygen_saturation }}%
+                                    {% if record.oxygen_saturation < 95 %}
+                                        <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                            <small class="text-muted">Normal: >95%</small>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Weight</label>
+                            <p class="h4">
+                                {% if record.weight %}
+                                    {{ record.weight }} kg
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted small">Height</label>
+                            <p class="h4">
+                                {% if record.height %}
+                                    {{ record.height }} cm
+                                {% else %}
+                                    <span class="text-muted">Not recorded</span>
+                                {% endif %}
+                            </p>
+                        </div>
+
+                        {% if record.bmi %}
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label text-muted small">BMI (Body Mass Index)</label>
+                            <p class="h4">
+                                {{ record.bmi }}
+                                <span class="badge bg-info">{{ record.get_bmi_category() }}</span>
+                            </p>
+                            <small class="text-muted">Normal: 18.5-24.9</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prescription & Tests -->
+            {% if record.prescription or record.lab_results or record.imaging_results %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-capsule"></i> Prescription & Tests
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if record.prescription %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Prescription</label>
+                        <div class="alert alert-warning">
+                            <pre class="mb-0" style="white-space: pre-wrap;">{{ record.prescription }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if record.lab_results %}
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Laboratory Results</label>
+                        <p>{{ record.lab_results }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if record.imaging_results %}
+                    <div class="mb-0">
+                        <label class="form-label text-muted">Imaging Results</label>
+                        <p>{{ record.imaging_results }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Doctor Notes -->
+            {% if record.doctor_notes %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-sticky-fill"></i> Doctor's Notes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ record.doctor_notes }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-md-4">
+            <!-- Patient Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-person"></i> Patient Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <strong>Name:</strong><br>
+                        <a href="{{ url_for('patients.view', patient_id=record.patient_id) }}">
+                            {{ record.patient.full_name }}
+                        </a>
+                    </p>
+                    <p class="mb-2">
+                        <strong>Age:</strong> {{ record.patient.age }} years
+                    </p>
+                    <p class="mb-2">
+                        <strong>Blood Type:</strong>
+                        {% if record.patient.blood_type %}
+                            <span class="badge bg-danger">{{ record.patient.blood_type }}</span>
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </p>
+                    {% if record.patient.allergies %}
+                    <p class="mb-0">
+                        <strong>Allergies:</strong><br>
+                        <span class="badge bg-warning text-dark">
+                            {{ record.patient.allergies }}
+                        </span>
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Follow-up -->
+            {% if record.follow_up_required %}
+            <div class="card shadow-sm mb-4 border-info">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-calendar-check"></i> Follow-up Required
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if record.follow_up_date %}
+                    <p class="mb-2">
+                        <strong>Date:</strong><br>
+                        {{ record.follow_up_date.strftime('%B %d, %Y') }}
+                    </p>
+                    {% endif %}
+                    {% if record.follow_up_notes %}
+                    <p class="mb-0">
+                        <strong>Notes:</strong><br>
+                        {{ record.follow_up_notes }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Record Metadata -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Record Details
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2">
+                        <small class="text-muted">Record ID:</small><br>
+                        #{{ record.id }}
+                    </p>
+                    <p class="mb-2">
+                        <small class="text-muted">Created:</small><br>
+                        {{ record.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                    </p>
+                    <p class="mb-0">
+                        <small class="text-muted">Last Updated:</small><br>
+                        {{ record.updated_at.strftime('%B %d, %Y at %I:%M %p') }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('appointments.create', patient_id=record.patient_id) }}"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-calendar-plus"></i> Schedule Appointment
+                        </a>
+                        <a href="{{ url_for('medical.create', patient_id=record.patient_id) }}"
+                           class="btn btn-outline-success">
+                            <i class="bi bi-plus-circle"></i> New Medical Record
+                        </a>
+                        <a href="{{ url_for('medical.patient_records', patient_id=record.patient_id) }}"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to All Records
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete (Admin/Doctor only) -->
+            {% if current_user.is_admin() or current_user.is_doctor() %}
+            <div class="card shadow-sm border-danger mb-4 no-print">
+                <div class="card-header bg-danger text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-exclamation-triangle"></i> Danger Zone
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('medical.delete', record_id=record.id) }}"
+                          onsubmit="return confirm('Are you sure you want to delete this medical record? This action cannot be undone.');">
+                        <button type="submit" class="btn btn-danger btn-sm w-100">
+                            <i class="bi bi-trash"></i> Delete Record
+                        </button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+    .no-print,
+    nav,
+    .btn,
+    .btn-group {
+        display: none !important;
+    }
+
+    .card {
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

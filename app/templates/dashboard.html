@@ -1,0 +1,213 @@
+{% extends "base/base.html" %}
+
+{% block title %}Dashboard - ClinicX{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h2">
+                <i class="bi bi-speedometer2"></i> Dashboard
+            </h1>
+            <p class="text-muted">Welcome back, {{ current_user.first_name }}!</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Total Patients</h6>
+                            <h2 class="mb-0">{{ stats.total_patients }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-people" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('patients.index') }}" class="text-white text-decoration-none">
+                        View all <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Today's Appointments</h6>
+                            <h2 class="mb-0">{{ stats.appointments_today }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-calendar-check" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('appointments.index') }}" class="text-white text-decoration-none">
+                        View calendar <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-warning">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Pending Payments</h6>
+                            <h2 class="mb-0">{{ stats.pending_payments }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-clock-history" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('finance.transactions') }}?status=pending" class="text-white text-decoration-none">
+                        View pending <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">This Month Balance</h6>
+                            <h2 class="mb-0">${{ "%.2f"|format(stats.balance_month) }}</h2>
+                        </div>
+                        <div>
+                            <i class="bi bi-cash-stack" style="font-size: 3rem; opacity: 0.5;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{{ url_for('finance.index') }}" class="text-white text-decoration-none">
+                        View details <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Appointments -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-day"></i> Today's Appointments
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if today_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Patient</th>
+                                        <th>Reason</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in today_appointments %}
+                                    <tr>
+                                        <td>{{ appointment.appointment_date.strftime('%H:%M') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('patients.view', patient_id=appointment.patient_id) }}">
+                                                {{ appointment.patient.full_name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ appointment.reason[:50] }}{% if appointment.reason|length > 50 %}...{% endif %}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'primary' if appointment.status == 'scheduled' else 'success' }}">
+                                                {{ appointment.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('appointments.view', appointment_id=appointment.id) }}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">No appointments scheduled for today.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-graph-up"></i> Financial Summary (This Month)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Income:</span>
+                            <span class="text-success fw-bold">${{ "%.2f"|format(stats.income_month) }}</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Expenses:</span>
+                            <span class="text-danger fw-bold">${{ "%.2f"|format(stats.expenses_month) }}</span>
+                        </div>
+                    </div>
+                    <hr>
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">Balance:</span>
+                            <span class="fw-bold {{ 'text-success' if stats.balance_month >= 0 else 'text-danger' }}">
+                                ${{ "%.2f"|format(stats.balance_month) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('patients.create') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-person-plus"></i> New Patient
+                        </a>
+                        <a href="{{ url_for('appointments.create') }}" class="btn btn-outline-success">
+                            <i class="bi bi-calendar-plus"></i> New Appointment
+                        </a>
+                        <a href="{{ url_for('finance.create') }}" class="btn btn-outline-info">
+                            <i class="bi bi-cash"></i> New Transaction
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

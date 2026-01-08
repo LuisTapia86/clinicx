@@ -1,0 +1,453 @@
+{% extends "base/base.html" %}
+
+{% block title %}New Patient - ClinicX{% endblock %}
+
+{% block content %}
+<!--
+    Create New Patient Page
+
+    Purpose: Form to register a new patient in the system
+    Features:
+    - Complete patient demographics form
+    - Form validation (client-side and server-side)
+    - Required fields marked with asterisks
+    - Organized sections (Personal, Contact, Medical, Emergency)
+    - Responsive design
+
+    Developer notes:
+    - Date format: YYYY-MM-DD (HTML5 date input)
+    - Phone field accepts various formats
+    - Email validation included
+    - All fields except core demographics are optional
+    - Form uses POST to patients.create route
+
+    Validation rules:
+    - First name, last name, date of birth, phone: Required
+    - Email: Optional but validated if provided
+    - All other fields: Optional
+
+    Future enhancements:
+    - Phone number formatting
+    - Address autocomplete
+    - Photo upload
+    - Insurance card scan
+    - ID verification
+    - Email/SMS notification to patient
+-->
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <!-- Header -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ url_for('patients.index') }}">Patients</a>
+                    </li>
+                    <li class="breadcrumb-item active">New Patient</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h2">
+                        <i class="bi bi-person-plus"></i> New Patient Registration
+                    </h1>
+                    <p class="text-muted">Add a new patient to the system</p>
+                </div>
+                <a href="{{ url_for('patients.index') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to Patients
+                </a>
+            </div>
+
+            <!-- Registration Form -->
+            <form method="POST" action="{{ url_for('patients.create') }}" id="patientForm">
+                <!-- Personal Information Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person"></i> Personal Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">
+                                    First Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="first_name"
+                                       name="first_name"
+                                       placeholder="Enter first name"
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">
+                                    Last Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="last_name"
+                                       name="last_name"
+                                       placeholder="Enter last name"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="date_of_birth" class="form-label">
+                                    Date of Birth <span class="text-danger">*</span>
+                                </label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="date_of_birth"
+                                       name="date_of_birth"
+                                       max="{{ today }}"
+                                       required>
+                                <small class="form-text text-muted">
+                                    Age will be calculated automatically
+                                </small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="gender" class="form-label">Gender</label>
+                                <select class="form-select" id="gender" name="gender">
+                                    <option value="">Select gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="blood_type" class="form-label">Blood Type</label>
+                                <select class="form-select" id="blood_type" name="blood_type">
+                                    <option value="">Select blood type</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-telephone"></i> Contact Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">
+                                    Phone Number <span class="text-danger">*</span>
+                                </label>
+                                <input type="tel"
+                                       class="form-control"
+                                       id="phone"
+                                       name="phone"
+                                       placeholder="(555) 555-5555"
+                                       required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email"
+                                       class="form-control"
+                                       id="email"
+                                       name="email"
+                                       placeholder="patient@example.com">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="address" class="form-label">Street Address</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="address"
+                                       name="address"
+                                       placeholder="123 Main Street, Apt 4B">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="city" class="form-label">City</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="city"
+                                       name="city"
+                                       placeholder="New York">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="state" class="form-label">State/Province</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="state"
+                                       name="state"
+                                       placeholder="NY">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="zip_code" class="form-label">ZIP/Postal Code</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="zip_code"
+                                       name="zip_code"
+                                       placeholder="10001">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="country" class="form-label">Country</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="country"
+                                       name="country"
+                                       placeholder="United States"
+                                       value="United States">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medical Information Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-heart-pulse"></i> Medical Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="allergies" class="form-label">Allergies</label>
+                                <textarea class="form-control"
+                                          id="allergies"
+                                          name="allergies"
+                                          rows="3"
+                                          placeholder="List any known allergies (medications, foods, etc.)"></textarea>
+                                <small class="form-text text-muted">
+                                    Separate multiple allergies with commas
+                                </small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="chronic_conditions" class="form-label">Chronic Conditions</label>
+                                <textarea class="form-control"
+                                          id="chronic_conditions"
+                                          name="chronic_conditions"
+                                          rows="3"
+                                          placeholder="List any chronic conditions (diabetes, hypertension, etc.)"></textarea>
+                                <small class="form-text text-muted">
+                                    Separate multiple conditions with commas
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="insurance_provider" class="form-label">Insurance Provider</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="insurance_provider"
+                                       name="insurance_provider"
+                                       placeholder="Insurance company name">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="insurance_number" class="form-label">Insurance Policy Number</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="insurance_number"
+                                       name="insurance_number"
+                                       placeholder="Policy/member number">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Contact Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-exclamation"></i> Emergency Contact
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="emergency_contact_name" class="form-label">Contact Name</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="emergency_contact_name"
+                                       name="emergency_contact_name"
+                                       placeholder="Full name of emergency contact">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="emergency_contact_phone" class="form-label">Contact Phone</label>
+                                <input type="tel"
+                                       class="form-control"
+                                       id="emergency_contact_phone"
+                                       name="emergency_contact_phone"
+                                       placeholder="(555) 555-5555">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="emergency_contact_relationship" class="form-label">Relationship</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="emergency_contact_relationship"
+                                       name="emergency_contact_relationship"
+                                       placeholder="e.g., Spouse, Parent, Sibling, Friend">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Referral Information Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-person-check"></i> Referral Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="referred_by" class="form-label">Referred By</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="referred_by"
+                                       name="referred_by"
+                                       placeholder="Name of person who referred this patient">
+                                <small class="form-text text-muted">
+                                    Name of family member or friend who recommended our clinic
+                                </small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="referral_source" class="form-label">How Did You Hear About Us?</label>
+                                <select class="form-select" id="referral_source" name="referral_source">
+                                    <option value="">Select source</option>
+                                    <option value="social_media">Social Media (Facebook, Instagram, etc.)</option>
+                                    <option value="friend_family">Friend or Family Member</option>
+                                    <option value="doctor_referral">Doctor Referral</option>
+                                    <option value="online_search">Online Search (Google, etc.)</option>
+                                    <option value="advertisement">Advertisement (Radio, TV, Newspaper)</option>
+                                    <option value="walk_in">Walk-in / Passing By</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="referral_notes" class="form-label">Referral Notes</label>
+                                <textarea class="form-control"
+                                          id="referral_notes"
+                                          name="referral_notes"
+                                          rows="2"
+                                          placeholder="Additional details about how the patient found our clinic..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Notes Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sticky"></i> Additional Notes
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control"
+                                      id="notes"
+                                      name="notes"
+                                      rows="4"
+                                      placeholder="Any additional information about the patient..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-circle"></i> Register Patient
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <a href="{{ url_for('patients.index') }}" class="btn btn-outline-secondary btn-lg">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <small class="text-muted">
+                                <span class="text-danger">*</span> Required fields
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set today's date as max for date of birth
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date_of_birth').setAttribute('max', today);
+});
+
+// Form validation before submission
+document.getElementById('patientForm').addEventListener('submit', function(e) {
+    // Additional custom validation can be added here
+    const requiredFields = this.querySelectorAll('[required]');
+    let isValid = true;
+
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            isValid = false;
+            field.classList.add('is-invalid');
+        } else {
+            field.classList.remove('is-invalid');
+            field.classList.add('is-valid');
+        }
+    });
+
+    if (!isValid) {
+        e.preventDefault();
+        alert('Please fill in all required fields marked with *');
+        return false;
+    }
+});
+
+// Remove validation classes on input
+document.querySelectorAll('input, select, textarea').forEach(element => {
+    element.addEventListener('input', function() {
+        this.classList.remove('is-invalid', 'is-valid');
+    });
+});
+</script>
+{% endblock %}

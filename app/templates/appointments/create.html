@@ -1,0 +1,127 @@
+{% extends "base/base.html" %}
+
+{% block title %}New Appointment - ClinicX{% endblock %}
+
+{% block content %}
+<!--
+    Create Appointment Form
+    Purpose: Schedule new patient appointment
+    Features: Patient selection, date/time picker, conflict detection
+-->
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('appointments.index') }}">Appointments</a></li>
+                    <li class="breadcrumb-item active">New Appointment</li>
+                </ol>
+            </nav>
+
+            <h1 class="h2 mb-4"><i class="bi bi-calendar-plus"></i> Schedule New Appointment</h1>
+
+            <form method="POST" action="{{ url_for('appointments.create', patient_id=selected_patient_id or '') }}">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white"><h5 class="mb-0">Appointment Information</h5></div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="patient_id" class="form-label">Patient <span class="text-danger">*</span></label>
+                            <select class="form-select" id="patient_id" name="patient_id" required>
+                                <option value="">Select Patient</option>
+                                {% for patient in patients %}
+                                    <option value="{{ patient.id }}" {{ 'selected' if patient.id == selected_patient_id }}>
+                                        {{ patient.full_name }} - Age: {{ patient.age }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="appointment_date" class="form-label">Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="appointment_date" name="appointment_date" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="appointment_time" class="form-label">Time <span class="text-danger">*</span></label>
+                                <input type="time" class="form-control" id="appointment_time" name="appointment_time" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="duration_minutes" class="form-label">Duration (minutes)</label>
+                                <select class="form-select" id="duration_minutes" name="duration_minutes">
+                                    <option value="15">15 minutes</option>
+                                    <option value="30" selected>30 minutes</option>
+                                    <option value="45">45 minutes</option>
+                                    <option value="60">1 hour</option>
+                                    <option value="90">1.5 hours</option>
+                                    <option value="120">2 hours</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="appointment_type" class="form-label">Type</label>
+                                <select class="form-select" id="appointment_type" name="appointment_type">
+                                    <option value="consultation">Consultation</option>
+                                    <option value="follow_up">Follow-up</option>
+                                    <option value="emergency">Emergency</option>
+                                    <option value="surgery">Surgery</option>
+                                    <option value="checkup">Checkup</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reason" class="form-label">Reason <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Reason for visit..." required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cost" class="form-label">Cost ($)</label>
+                            <input type="number" step="0.01" class="form-control" id="cost" name="cost" value="0.00">
+                        </div>
+
+                        <div class="mb-0">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Additional notes..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-circle"></i> Schedule Appointment
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-grid">
+                                    <a href="{{ url_for('appointments.index') }}" class="btn btn-outline-secondary btn-lg">
+                                        <i class="bi bi-x-circle"></i> Cancel
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set minimum date to today
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('appointment_date').setAttribute('min', today);
+});
+</script>
+{% endblock %}
