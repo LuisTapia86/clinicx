@@ -107,14 +107,26 @@ def create(patient_id=None):
 
     if request.method == 'POST':
         # Get form data
-        patient_id = int(request.form.get('patient_id'))
+        patient_id_form = request.form.get('patient_id')
         appointment_date = request.form.get('appointment_date')
         appointment_time = request.form.get('appointment_time')
-        duration = int(request.form.get('duration_minutes', 30))
+        duration_str = request.form.get('duration_minutes', '30')
         reason = request.form.get('reason')
         appointment_type = request.form.get('appointment_type')
 
-        if not all([patient_id, appointment_date, appointment_time, reason]):
+        # Validate patient_id
+        if not patient_id_form or patient_id_form == '':
+            flash('Please select a patient.', 'danger')
+            return render_template('appointments/create.html', patients=patients, selected_patient_id=None)
+
+        try:
+            patient_id = int(patient_id_form)
+            duration = int(duration_str)
+        except ValueError:
+            flash('Invalid patient or duration value.', 'danger')
+            return render_template('appointments/create.html', patients=patients, selected_patient_id=None)
+
+        if not all([appointment_date, appointment_time, reason]):
             flash('Please fill in all required fields.', 'danger')
             return render_template('appointments/create.html', patients=patients, selected_patient_id=patient_id)
 
