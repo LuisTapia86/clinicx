@@ -21,7 +21,7 @@
 
             <h1 class="h2 mb-4"><i class="bi bi-calendar-plus"></i> Schedule New Appointment</h1>
 
-            <form method="POST" action="{{ url_for('appointments.create', patient_id=selected_patient_id or '') }}">
+            <form method="POST" action="{{ url_for('appointments.create') }}">
                 <div class="card shadow-sm mb-4">
                     <div class="card-header bg-primary text-white"><h5 class="mb-0">Appointment Information</h5></div>
                     <div class="card-body">

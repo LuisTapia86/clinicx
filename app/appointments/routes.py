@@ -171,14 +171,24 @@ def edit(appointment_id):
 
     if request.method == 'POST':
         # Update appointment
-        appointment.patient_id = int(request.form.get('patient_id'))
+        patient_id_form = request.form.get('patient_id')
+        if patient_id_form:
+            try:
+                appointment.patient_id = int(patient_id_form)
+            except ValueError:
+                flash('Invalid patient selected.', 'danger')
+                return render_template('appointments/edit.html', appointment=appointment, patients=patients)
 
         appointment_date = request.form.get('appointment_date')
         appointment_time = request.form.get('appointment_time')
         datetime_str = f"{appointment_date} {appointment_time}"
         appointment.appointment_date = datetime.strptime(datetime_str, '%Y-%m-%d %H:%M')
 
-        appointment.duration_minutes = int(request.form.get('duration_minutes', 30))
+        duration_str = request.form.get('duration_minutes', '30')
+        try:
+            appointment.duration_minutes = int(duration_str)
+        except ValueError:
+            appointment.duration_minutes = 30
         appointment.appointment_type = request.form.get('appointment_type')
         appointment.reason = request.form.get('reason')
         appointment.status = request.form.get('status')
